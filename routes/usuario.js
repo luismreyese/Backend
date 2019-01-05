@@ -1,14 +1,11 @@
 var express    = require('express');
 var bcrypt     = require('bcryptjs');
-// var jwt        = require('jsonwebtoken');
-// var seed       = require('../config/config').SEED;
+
 var chkToken   = require('../Middleware/checktocken');
-
-
+var messg      = require('../Messages/mssgservices');
 
 var appRoute   = express();
-var appUsuario = require('../models/usaurio');
-
+var appUsuario = require('../models/usuario');
 
 var salt = bcrypt.genSaltSync(10);
 // Rutas
@@ -16,23 +13,31 @@ var salt = bcrypt.genSaltSync(10);
 // ============================================
 // Obtiene todos los usuarios de la Bdd
 // ============================================
-appRoute.get('/',chkToken.verificaToken,(Request,Response,next) => {
+ appRoute.get('/',chkToken.verificaToken,(Request,Response) => {
+//    appRoute.get('/',(Request,Response) => {   
+     var desde  = Request.query.desde  || 0;
+     desde  = Number( desde );
+     var limite  = Request.query.limite  || 0;
+     limite  = Number( limite );
 
     appUsuario.find({ },'nombre email role img' )
+            .skip(desde)
+            .limit(limite)
             .exec( (err,data) => {
                 if (err) {
-                    return Response.status(500).json({
-                        Ok: false,
-                        mensaje: 'Error cargando usuarios'
-                        });
+
+                    messg(Response,500,err);
+                    // return Response.status(500).json({
+                    //     Ok: false,
+                    //     mensaje: 'Error cargando usuarios'
+                    //     });
                 };
-        
-                Response.status(200).json({
-                    Ok: true,
-                    mensaje: 'Listado de Usuarios',
-                    usuarios: data,
-                    usrToken: Request.usuario
-                    });
+                appUsuario.count({},(err,counter)=> {
+                    messg(Response,200,{ totalReg: counter,
+                                         usuarios: data, usrToken: Request.usuario });
+
+                } );
+                
             }
             );
         } );
@@ -49,47 +54,34 @@ appRoute.get('/',chkToken.verificaToken,(Request,Response,next) => {
 
 appRoute.put('/:id', chkToken.verificaToken ,(req,res) => {
 
-    var id = req.params.id;
-    var body = res.body;
+    var id   = req.params.id;
+    var body = req.body;
 
     appUsuario.findById(id,(err,usuarioMdb) => {
         if(err){
-                return res.status(500).json({
-                Ok: false,
-                mensaje: `Error en la base de Datos, Id no encontrado ${id}`,
-                errors: err,
-                });
-        }
+               messg(res,500,err)
+        };
 
         if(!usuarioMdb){
-                return res.status(404).json({
-                Ok: false,
-                mensaje: `El usuario no Existe en la base de datos ${id}`,
-                errors:{ message: 'Error en el ingreso del Id'}
-                });
-        }
+            messg(res,404,{ message: `Error en el ingreso del Id ${id}` });
+        };
 
         usuarioMdb.nombre = body.nombre;
         usuarioMdb.role = body.role;
         usuarioMdb.email = body.email;
 
-        // res.status(200).json({
-        //     data: usuarioMdb
-        // });
-
         usuarioMdb.save((error,usuarioUpdate) => {
             if(error){
-                return res.status(400).json({
-                    Ok: false,
-                    mensaje: 'error al actualizar el usuario con',
-                    errors: error
-                    });
+                messg(res,400,{ message: `Error al actualizar el usaurio con el Id ${id}`,
+                                error  : error })
             }
-            res.status(200).json({
-                Ok: true,
-                mensaje: 'Usuario Actualizado',
-                data: usuarioUpdate
-            });
+            messg(res,201,{ message: 'usuario Actualizado',
+                            usr: usuarioUpdate});
+            // res.status(200).json({
+            //     Ok: true,
+            //     mensaje: 'Usuario Actualizado',
+            //     data: usuarioUpdate
+            // });
         } );
     } );
 } );
@@ -98,7 +90,7 @@ appRoute.put('/:id', chkToken.verificaToken ,(req,res) => {
 // Crea los usuarios en la Bdd
 // ============================================
 
-appRoute.post('/',chkToken.verificaToken,(req, res, next) => {
+appRoute.post('/',chkToken.verificaToken,(req, res) => {
 
     var body = req.body;  // Solamente funciona al configurar el body parser en el app.js
 
@@ -112,17 +104,11 @@ appRoute.post('/',chkToken.verificaToken,(req, res, next) => {
 
     usuario.save(( err, userMDB )=> {
         if (err){
-            return res.status(400).json({
-                Ok: false,
-                mensaje: 'Error creando usuarios',
-                error: err
-                });
+            messg(res,400,err)
         };
-        res.status(201).json({
-            ok: true,
-            body: userMDB,
-            usrToken: req.usuario
-        });
+        messg(res,200,{ message : 'usuario Creado',
+                        body    : userMDB,
+                        usrToken: req.usuario });
     } );
 })
 
@@ -134,29 +120,15 @@ appRoute.delete('/:id',chkToken.verificaToken,(req, res, next) => {
     var id = req.params.id;
     appUsuario.findByIdAndRemove(id,(err,respBd) =>{
      if (err) {
-        return  res.status(404).json({
-                                      Ok: false,
-                                      mensaje: 'Error al eliminar el registro de la Bdd',
-                                      error: err
-
-         });
+        messg(res,500,err);
      };
 
      if ( !respBd ) {
-        return  res.status(403).json({
-                                      Ok: false,
-                                      mensaje: `No existe el usuario con el Id ${id}`,
-                                      error: err
-
-         });
+        messg(res,403,{ message: `No existe el usuario con el Id ${id}` })
      };
 
-
-     res.status(200).json({
-                            Ok: true,
-                            mensaje: 'Registro eliminado correctamente',
-                            resp : respBd
-     });
+     messg(res,200,{ message: 'Registro eliminado correctamente',
+                     resp: respBd});
     } );
 } );
 

@@ -5,9 +5,14 @@ var bodyParser = require('body-parser');
 
 
 // Para utilizar las rutas es necesario importarla
-var appRoutes   = require("./routes/app");
-var appUsuarios = require("./routes/usuario");
+var appRoutes     = require("./routes/app");
+var appUsuarios   = require("./routes/usuario");
 var routeLogin    = require("./routes/login")
+var routeHospital = require("./routes/hospitales");
+var routeMedico   = require("./routes/medicos");
+var routeBusqueda = require("./routes/busqueda");
+var routeUpload   = require('./routes/fileupload');
+var routeImg      = require('./routes/img');
 
 // Inicializacion de variable
 var app = express();
@@ -21,7 +26,7 @@ var app = express();
 
 
 // mongoose.connect('mongodb://localhost:27017/HospitalDB',{useMongoClient: true } )
-mongoose.connect('mongodb://localhost:27017/HospitalDB',{useMongoClient: true })
+mongoose.connect('mongodb://localhost:27017/HospitalDB')
         .then( () => { console.log('conexion realizada con exito \x1b[32m%s\x1b[0m','HospitalDB')})
         .catch((err) => { console.log('error de conexion',err)});
 
@@ -39,13 +44,18 @@ mongoose.connect('mongodb://localhost:27017/HospitalDB',{useMongoClient: true })
 // middlewhare xxx.use<>
 
 // parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.urlencoded({ extended: false }));
  
 // parse application/json
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
+app.use('/busqueda',routeBusqueda);
+app.use('/hospitales',routeHospital);
+app.use('/medicos',routeMedico);
 app.use('/usuario',appUsuarios);
 app.use('/login',routeLogin);
+app.use('/upload',routeUpload);
+app.use('/img', routeImg);
 app.use('/',appRoutes);
 
 // Escuchar peticiones
