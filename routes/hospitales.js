@@ -27,11 +27,11 @@ appHsptl.get('/',(req,res) => {
     
     hsmodel.find({ },(err,datares)=> {
         if (err){
-            messages(res,500,err);
+            messages(res,500,err);return;
         };
 
         hsmodel.count({},(err,counter) => {messages(res,200,{ noRegistros:counter,
-                                                             hospitales: datares});});
+                                                             hospitales: datares});return;});
     } ).populate('usuario','nombre email img')
        .skip(desde)
        .limit(limite)
@@ -51,10 +51,10 @@ appHsptl.put('/:id', chkToken.verificaToken ,(req,res) => {
 
     hsmodel.findById(id,(err,hospitalMdb) => {
         if(err){
-            messages(res,500,err);
+            messages(res,500,err);return;
         };
         if(!hospitalMdb){
-            messages(res,404,{ message: `Error en el ingreso del Id ${id}` });
+            messages(res,404,{ message: `Error en el ingreso del Id ${id}` });return;
         };
 
         hospitalMdb.nombre  = body.nombre;
@@ -63,10 +63,10 @@ appHsptl.put('/:id', chkToken.verificaToken ,(req,res) => {
         hospitalMdb.save((error,hospitalUpdate) => {
             if(error){
                 messages(res,400,{ message: `Error al actualizar el hospital con el Id ${id}`,
-                                   error  : error });
+                                   error  : error });return;
             };
             messages(res,201,{ message: 'Hospital Actualizado',
-                               Hospital: hospitalUpdate});
+                               Hospital: hospitalUpdate});return;
         } );
     } ); 
 } );
@@ -87,11 +87,11 @@ appHsptl.post('/',chkToken.verificaToken,(req, res) => {
 
     hospital.save(( err, hospitalMDB )=> {
         if (err){
-            messages(res,400,err)
+            messages(res,400,err);return;
         };
         messages(res,200,{ message : 'Hospital Creado',
                         body    : hospitalMDB,
-                        usrToken: req.usuario });
+                        usrToken: req.usuario });return;
     } );
 })
 
@@ -103,25 +103,25 @@ appHsptl.delete('/:id',chkToken.verificaToken,(req, res) => {
     var id = req.params.id;
     hsmodel.findByIdAndRemove(id,(err,respBd) =>{
      if (err) {
-        messages(res,500,err);
+        messages(res,500,err);return;
      };
 
      if ( !respBd ) {
-        messages(res,403,{ message: `No existe el hospital con el Id ${id}` })
+        messages(res,403,{ message: `No existe el hospital con el Id ${id}` });return;
      };
 
      messages(res,200,{ message: 'Registro eliminado correctamente',
-                     resp: respBd});
+                     resp: respBd});return;
     } );
 } );
 
 function getById  (p_id) {
     hsmodel.findById(id,(err,hospitalMdb) => {
         if(err){
-            messages(res,500,err)
+            messages(res,500,err);return;
         }
         if(!hospitalMdb){
-            messages(res,404,{ message: `Error en el ingreso del Id ${id}` });
+            messages(res,404,{ message: `Error en el ingreso del Id ${id}` });return;
         };
 
         return hospitalMdb;

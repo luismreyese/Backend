@@ -37,15 +37,15 @@ routeSearch.get('/coleccion/:tabla/:busqueda',(req,res) =>{
             break;
         default:
             messages( res,404,{ok: false,
-                               error: 'Ruta no valida' });
+                               error: 'Ruta no valida' });return;
            break;
     };
     promesa.then(data =>{
                 messages( res,200,{ok: true,
-                                   datos: data } );
+                                   datos: data } );return;;
             } )
             .catch(err => { messages( res,400,{ok: false,
-                                               error: err }); } );
+                                               error: err });return; } );
 }
 );
 
@@ -71,13 +71,13 @@ routeSearch.get('/',(req,res) =>{
             messages( res,200,{ok: true,
                    hospitales: respuestas[1],
                    medicos: respuestas[2],
-                   usurios: respuestas[0]});
+                   usurios: respuestas[0]});return;
            } )
            .catch( errores => { 
             messages( res,400,{ok: false,
                                errorHsl: errores[1],
                                errorMed: errores[2],
-                               errorusr: errores[0] });
+                               errorusr: errores[0] });return;
            } );
 
 } );

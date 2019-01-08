@@ -31,10 +31,12 @@ var salt = bcrypt.genSaltSync(10);
                     //     Ok: false,
                     //     mensaje: 'Error cargando usuarios'
                     //     });
+                    return;
                 };
                 appUsuario.count({},(err,counter)=> {
                     messg(Response,200,{ totalReg: counter,
                                          usuarios: data, usrToken: Request.usuario });
+                    return;
 
                 } );
                 
@@ -59,11 +61,13 @@ appRoute.put('/:id', chkToken.verificaToken ,(req,res) => {
 
     appUsuario.findById(id,(err,usuarioMdb) => {
         if(err){
-               messg(res,500,err)
+               messg(res,500,err);
+               return;
         };
 
         if(!usuarioMdb){
             messg(res,404,{ message: `Error en el ingreso del Id ${id}` });
+            return;
         };
 
         usuarioMdb.nombre = body.nombre;
@@ -73,10 +77,12 @@ appRoute.put('/:id', chkToken.verificaToken ,(req,res) => {
         usuarioMdb.save((error,usuarioUpdate) => {
             if(error){
                 messg(res,400,{ message: `Error al actualizar el usaurio con el Id ${id}`,
-                                error  : error })
+                                error  : error });
+                                return;
             }
             messg(res,201,{ message: 'usuario Actualizado',
                             usr: usuarioUpdate});
+                            return;
             // res.status(200).json({
             //     Ok: true,
             //     mensaje: 'Usuario Actualizado',
@@ -90,8 +96,8 @@ appRoute.put('/:id', chkToken.verificaToken ,(req,res) => {
 // Crea los usuarios en la Bdd
 // ============================================
 
-appRoute.post('/',chkToken.verificaToken,(req, res) => {
-
+// appRoute.post('/',chkToken.verificaToken,(req, res) => {
+appRoute.post('/',(req, res) => {
     var body = req.body;  // Solamente funciona al configurar el body parser en el app.js
 
     var usuario = new appUsuario ({
@@ -105,10 +111,12 @@ appRoute.post('/',chkToken.verificaToken,(req, res) => {
     usuario.save(( err, userMDB )=> {
         if (err){
             messg(res,400,err)
+            return;
         };
         messg(res,200,{ message : 'usuario Creado',
                         body    : userMDB,
                         usrToken: req.usuario });
+        return;
     } );
 })
 
@@ -121,14 +129,17 @@ appRoute.delete('/:id',chkToken.verificaToken,(req, res, next) => {
     appUsuario.findByIdAndRemove(id,(err,respBd) =>{
      if (err) {
         messg(res,500,err);
+        return;
      };
 
      if ( !respBd ) {
-        messg(res,403,{ message: `No existe el usuario con el Id ${id}` })
+        messg(res,403,{ message: `No existe el usuario con el Id ${id}` });
+        return;
      };
 
      messg(res,200,{ message: 'Registro eliminado correctamente',
                      resp: respBd});
+                     return;
     } );
 } );
 
