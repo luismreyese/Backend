@@ -136,7 +136,8 @@ appMedicos.delete('/:id',chkToken.verificaToken,(req, res) => {
      };
 
      messg(res,200,{ message: 'Registro eliminado correctamente',
-                     resp: respBd});return;
+                     resp: respBd});
+                     return;
     } );
 } );
 module.exports = appMedicos;

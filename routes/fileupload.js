@@ -29,7 +29,7 @@ id        = req.params.id;
         mssges(res,400,{Error: 'No existe ningun Archivo'});return;
     }
 
-    if (arraycol.indexOf(coleccion) <= 0){
+    if (arraycol.indexOf(coleccion) < 0 ){
         mssges(res,403,{ Ok: false,
                          Error: `Extensión ${coleccion} no permitida`});return;
     };
@@ -39,7 +39,7 @@ arrayName = fileName.name.split('.');
 
 if (fileName){
     extension = arrayName[arrayName.length - 1];
-    if (arrayext.indexOf(extension) <= 0){
+    if (arrayext.indexOf(extension) < 0){
         mssges(res,403,{ Ok: false,
                          Error: `Extensión ${extension} no permitida`});return;
     };
@@ -52,13 +52,12 @@ if (fileName){
        mssges(res,400,{ 'Ok': false,
                          'path':path,
                          'mensaje': 'Nombre personalizado',
-                         'error': error });return;}
+                         'error': error });
+                        }else{
+        imgColection(res,coleccion,id,newname); return;                  
+                        }
     } );  
  }
-
- imgColection(res,coleccion,id,newname);
-
- 
 } );
 
 function imgColection(res,coleccion,id,filename)
@@ -66,11 +65,11 @@ function imgColection(res,coleccion,id,filename)
   switch (coleccion) {
       case 'usuarios':
           modelUsr.findById(id,(err,user) => {
-          if(err){mssges(res,400,{Error: err});};
+          if(err){mssges(res,400,{Error: err});return};
           if(delOldImg(res,user.img,coleccion)){
             user.img= filename; };  
             user.save((err,userAct) => {
-             if (err){mssges(res,400,{Error: err});};
+             if (err){mssges(res,400,{Error: err});return;};
              mssges(res,200,{'usuarioAct': userAct});return;
             } );
         });
@@ -81,7 +80,7 @@ function imgColection(res,coleccion,id,filename)
             if(delOldImg(res,hsptl.img,coleccion)){
                 hsptl.img= filename; 
                 hsptl.save((err,hsptlAct) => {
-                    if (err){mssges(res,400,{Error: err});};
+                    if (err){mssges(res,400,{Error: err});return;};
                     mssges(res,200,{'usuarioAct': hsptlAct});return;
                    } );
             };  });
@@ -104,18 +103,23 @@ function imgColection(res,coleccion,id,filename)
 };
 
 function delOldImg(res,img,coleccion) {
+    if (img === null || img === undefined || img === '' ) {
+        return true;
+    }
     var oldPath = `./uploads/${coleccion}/${img}`;
    if(fs.existsSync(oldPath)){
-       fs.unlink(oldPath,(error)=>{
+       fs.unlink(oldPath,(error)=>{ 
         if(error){
             mssges(res,500,{'mensaje': 'Error en eliminacion del archivo',
-                            'error'  : error}); return;
+                            'error'  : error}); return false;
         }
        });
-   }else{
-    mssges(res,400,{'mensaje': 'Error en la ruta del acceso',
-                    'path'   : oldPath}); return;
-   };
+   }
+//    else{
+//     // mssges(res,400,{'mensaje': 'Error en la ruta del acceso',
+//     //                 'path'   : oldPath}); 
+//                     return;
+//    };
    return true;
 };
 

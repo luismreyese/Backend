@@ -54,11 +54,11 @@ switch (mssgCode) {
     default:
         break;
 };
+
 return res.status(mssgCode).json({
     Ok: fnOk,
     mensaje: fnMsg,
-    argmnt: arg } );
-
+    argmnt: arg });
 };
 
 module.exports = CRUDServices;
